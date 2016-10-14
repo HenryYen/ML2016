@@ -81,7 +81,7 @@ dimension_per_day = 18
 model_power = 1     
 model_houramount = 5
 
-with open('train.csv', 'r') as f:
+with open('train.csv', 'r', encoding='mac_roman') as f:
     for line in f:
         parts = line.split(',')
         factor = parts[factor_idx]
