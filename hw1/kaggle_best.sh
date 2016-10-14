@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 kaggle_best.py
+python3 generate_result.py "kaggle_best.csv"

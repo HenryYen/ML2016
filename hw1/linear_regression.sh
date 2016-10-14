@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 linear_regression.py
+python3 generate_result.py "linear_regression.csv"
