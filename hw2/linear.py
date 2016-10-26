@@ -1,14 +1,11 @@
 import numpy as np
 import pickle
 import sys
+import random as rd
 
 fn_train_set = sys.argv[1]    # filename of train set
 fn_model = sys.argv[2]
-setting = {"learning_rate":0.1, "lambda":0., "epoch_no":2000}
-
-def sigmoid(z):
-    return 1. / (1. + np.exp(-z))
-  
+setting = {"learning_rate":1., "lambda":0., "epoch_no":5000}
      
 def gradient(train_data, setting):    
     learning_rate = setting["learning_rate"]
@@ -16,8 +13,8 @@ def gradient(train_data, setting):
     epoch_no = setting["epoch_no"]
     feature_size = 57
     train_mail_no = len(train_data)
-    b = 0.
-    w = np.array( [0.] * feature_size )
+    b = rd.uniform( -2, 2 )
+    w = np.array( [rd.uniform( -2, 2 )] * feature_size )
     ada_b = 0.
     ada_w = np.array( [0.] * feature_size )
         
@@ -27,7 +24,7 @@ def gradient(train_data, setting):
         for n in range(train_mail_no):
             y_hat = train_data[n][-1]
             x = np.array(train_data[n][1:-1])
-            f = sigmoid(b + np.sum(w * x))
+            f = b + np.sum(w * x)
             grad_b += (y_hat - f) * (-1)          
             grad_w += (y_hat - f) * (-x) + 2 * lambda_rate * w
         ada_b += grad_b**2

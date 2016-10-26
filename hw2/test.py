@@ -6,8 +6,6 @@ fn_model = sys.argv[1]
 fn_test_set  = sys.argv[2]      # filename of test set
 fn_result = sys.argv[3]
 
-def sigmoid(z):
-    return 1. / (1. + np.exp(-z))
 
 def read_csv(filename):
     data = []
@@ -36,7 +34,7 @@ def run_result(test_data, b, w):
     result = []
     for n in test_data:
         x = n[1:]
-        f = (sigmoid(b + np.sum(w * x)))
+        f = b + np.sum(w * x)
         ans = 1 if f > 0.5 else 0
         result.append(ans)
     return result  
