@@ -26,7 +26,7 @@ def write_csv(filename, data):
                 index += 1
                 
 def read_pickle(fn_model):
-    with open(fn_model+'.pkl', 'rb') as f:
+    with open(fn_model, 'rb') as f:
         mylist = pickle.load(f)
     return mylist
             

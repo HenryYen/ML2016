@@ -44,7 +44,7 @@ def read_csv(filename):
     
     
 def write_pickle(fn_model, mylist):
-    with open(fn_model+'.pkl', 'wb') as f:
+    with open(fn_model, 'wb') as f:
         pickle.dump(mylist, f)
         
     
