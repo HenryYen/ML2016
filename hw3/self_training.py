@@ -16,10 +16,16 @@ fn_test = data_path + 'test.p'
 
 batch_size = 128
 nb_classes = 10
-nb_epoch = 40
+nb_epoch = 1
+nb_label_data = 5000
+nb_unlabel_data = 45000
+nb_test = 10000
 data_augmentation = True
 img_rows, img_cols = 32, 32
 img_channels = 3
+
+
+
 
 
 def load_label_data():
@@ -28,11 +34,11 @@ def load_label_data():
     nb_piece = len(label_data[0])   # 500
     y_train = []
 
-    X_train = label_data.reshape(5000, 3, 32, 32)
+    X_train = np.array(label_data).reshape(nb_label_data, 3, 32, 32)
     for i in range(nb_class):
         y_train += [[i] for _ in range(nb_piece)]
-    del label_data    
-
+    del label_data  
+    y_train = np.array(y_train)  
 
     """
     for i in range(nb_class):
@@ -50,18 +56,16 @@ def load_label_data():
                 if len(tmp_img) == img_rows:
                     X_train.append(tmp_img)
     X_train = np.array(X_train)
-    y_train = np.array(y_train)
     """
     return (X_train, y_train)
 
     
 def load_unlabel_data():
     unlabel_data = pickle.load(open(fn_unlabel, 'rb'))
-    #print unlabel_data[50][1023], unlabel_data[50][2047], unlabel_data[50][3071]
-    #test_data = pickle.load(open(fn_test, 'rb'))
-    nb_piece = len(unlabel_data)   # 45000
-    X_unlabel = []
+    X_unlabel = np.array(unlabel_data).reshape(nb_unlabel_data, 3, 32, 32)
+    del unlabel_data
     
+    """
     for i in range(nb_piece):
         tmp_row = []
         tmp_img = []
@@ -74,20 +78,48 @@ def load_unlabel_data():
             if len(tmp_img) == img_rows:
                 X_unlabel.append(tmp_img)
     X_unlabel = np.array(X_unlabel)
+    """
     return X_unlabel
     
+def load_test_data():
+    test_data = pickle.load(open(fn_test, 'rb'))
+    X_test = np.array(test_data['data']).reshape(nb_test, 3, 32, 32)
+    del test_data
     
+    return X_test
+    
+
+    
+def modify_label(model, X_train, Y_train, X_unlabel):
+    label_list = []
+    
+    confidence = model.predict(X_unlabel).tolist()
+    for img in confidence:
+        label = img.index(max(img))
+        label_list.append([label])
+    bin_label = np_utils.to_categorical(label_list, nb_classes)
+    print bin_label.shape
+    print Y_train.shape
+    Y_train = np.concatenate((Y_train, bin_label), axis=0)
+    X_train = np.concatenate((X_train, X_unlabel), axis=0)
+    
+    del confidence
+    del label_list
+    del bin_label
+    return (X_train, Y_train, X_unlabel)
+
+
+
     
 if __name__ == '__main__':
-    (X_train, y_train), (X_test, y_test) = cifar10.load_data()
+    #(X_train, y_train), (X_test, y_test) = cifar10.load_data()
     (X_train, y_train) = load_label_data()
-    print X_train.shape
-    #X_unlabel = load_unlabel_data()
+    X_unlabel = load_unlabel_data()
+    #print X_train.shape, y_train.shape
     #print X_unlabel.shape
-    #print X_unlabel[50][31][31]
 
     Y_train = np_utils.to_categorical(y_train, nb_classes)
-    Y_test = np_utils.to_categorical(y_test, nb_classes)
+    #Y_test = np_utils.to_categorical(y_test, nb_classes)
 
     model = Sequential()
 
@@ -121,29 +153,28 @@ if __name__ == '__main__':
     model.add(Activation('relu'))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
-
     # let's train the model using SGD + momentum (how original).
-    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     X_train = X_train.astype('float32')
-    X_test = X_test.astype('float32')
+    #X_test = X_test.astype('float32')
     X_train /= 255
-    X_test /= 255
+    #X_test /= 255
 
     
     while True:
         print('X_train shape:', X_train.shape)
-        print(X_train.shape[0], 'train samples')
-        print(X_test.shape[0], 'test samples')
+        print(X_train.shape[0], 'label samples')
+        print(X_unlabel.shape[0], 'unlabel samples')
+        #print(X_test.shape[0], 'test samples')
 
         if not data_augmentation:
             print('Not using data augmentation.')
             model.fit(X_train, Y_train,
                       batch_size=batch_size,
                       nb_epoch=nb_epoch,
-                      validation_data=(X_test, Y_test),
-                      shuffle=True)
+                      shuffle=True, validation_split=0.2)
         else:
             print('Using real-time data augmentation.')
 
@@ -169,9 +200,10 @@ if __name__ == '__main__':
                                 batch_size=batch_size),
                                 samples_per_epoch=X_train.shape[0],
                                 nb_epoch=nb_epoch)
-            #                    validation_data=(X_test, Y_test))
+         #                       validation_data=(X_test, Y_test))
 
-        #confidence = model.predict()
+        (X_train, y_train, X_unlabel) = modify_label(model, X_train, y_train, X_unlabel)
+        
 
 
 
