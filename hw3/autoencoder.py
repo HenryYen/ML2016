@@ -165,7 +165,7 @@ if __name__ == '__main__':
         store_model(fn_model, model)
                       
         
-        for time in range(5):    
+        for time in range(4):    
             print '======Time:',time, '=======' 
             
             (X_train_code, Y_train, X_unlabel_code) = modify_label(model, encoder, X_train_code, Y_train, X_unlabel_code)
