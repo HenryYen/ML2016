@@ -1,0 +1,2 @@
+After running ./train.sh, my program will stored two models in this directory.
+One is "autoencoder model", and the other is "self-training model".
