@@ -135,7 +135,7 @@ if __name__ == '__main__':
         model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=90, verbose=1, shuffle=True)
         store_model(model)
 
-        for time in range(3):    
+        for time in range(2):    
             print '======Time:',time, '======='         
                         
             (X_train, Y_train, X_unlabel) = modify_label(model, X_train, Y_train, X_unlabel)
